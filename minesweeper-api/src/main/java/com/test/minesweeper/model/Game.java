@@ -4,9 +4,78 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Model class to represent a game
+ */
 public class Game {
 
+    private String gameId;
     private List<List<Cell>> board;
+    private boolean over;
+
+    /**
+     * This method handles a user click.
+     * If the cell is already visible or flagged, no action is performed.
+     * If the cell was hidden and contains a bomb, the game is set as over.
+     * If the user clicked on a safe cell, the cell status will be set as visible,
+     * and the surrounding cells will be revealed if required.
+     */
+    public void click(int row, int column) {
+        Cell cell = board.get(row).get(column);
+        if (Status.HIDDEN.equals(cell.getStatus())) {
+            if (cell.isBomb()) {
+                this.setOver(true);
+            } else {
+                cell.setStatus(Status.VISIBLE);
+                revealAdjacentSafeCells(row, column);
+            }
+        }
+    }
+
+    /**
+     * This method iterates through the surrounding cells of a clicked cell.
+     * If the coordinates are within the board limits,
+     * and the cell is hidden and is not a bomb, then it is set a visible.
+     * If in addition to that, the numberOfAdjacentBombs equals zero,
+     * the process is repeated recursively on its surrounding cells.
+     */
+    private void revealAdjacentSafeCells(int row, int column) {
+        for (int i = row - 1; i <= row + 1; i++) {
+            for (int j = column - 1; j <= column + 1; j++) {
+                if (isWithinBoardLimits(i, j)) {
+                    Cell cell = board.get(i).get(j);
+                    if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()) {
+                        cell.setStatus(Status.VISIBLE);
+                        if (cell.getAdjacentBombs() == 0) {
+                            revealAdjacentSafeCells(i, j);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isWithinBoardLimits(int row, int column) {
+        return row >= 0 && row < board.size()
+                && column >= 0 && column < board.get(0).size();
+    }
+
+
+    public boolean isOver() {
+        return over;
+    }
+
+    public void setOver(boolean over) {
+        this.over = over;
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(String gameId) {
+        this.gameId = gameId;
+    }
 
     private Game(List<List<Cell>> board) {
         this.board = board;
@@ -41,8 +110,8 @@ public class Game {
                 int row = getRandomIntBetweenZeroAnd(board.size() - 1);
                 int column = getRandomIntBetweenZeroAnd(board.get(0).size() - 1);
                 Cell cell = board.get(row).get(column);
-                if (!(cell instanceof Bomb)) {
-                    board.get(row).set(column, new Bomb());
+                if (!cell.isBomb()) {
+                    cell.setBomb(true);
                     increaseBombCountInAdjacentCells(row, column);
                     bombs--;
                 }
@@ -54,14 +123,16 @@ public class Game {
             return ThreadLocalRandom.current().nextInt(0, max + 1);
         }
 
+        /**
+         * This method iterates through the surrounding cells of a bomb,
+         * checks if the coordinates are within the board limits,
+         * and increases the neighbour cell bomb count by one.
+         */
         private void increaseBombCountInAdjacentCells(int row, int column) {
             for (int i = row - 1; i <= row + 1; i++) {
                 for (int j = column - 1; j <= column + 1; j++) {
                     if (isWithinBoardLimits(i, j)) {
-                        Cell cell = board.get(i).get(j);
-                        if (cell instanceof SafeCell) {
-                            ((SafeCell)cell).increaseAdjacentBombsBy(1);
-                        }
+                        board.get(i).get(j).increaseAdjacentBombCountByOne();
                     }
                 }
             }

@@ -1,8 +1,12 @@
 package com.test.minesweeper.model;
 
+import com.test.minesweeper.exception.InvalidActionException;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * Model class to represent a game
@@ -11,23 +15,51 @@ public class Game {
 
     private String gameId;
     private List<List<Cell>> board;
+    private int bombs;
+    private int flags;
+    private boolean won;
     private boolean over;
+
+    private Game(List<List<Cell>> board, int bombs) {
+        this.board = board;
+        this.bombs = bombs;
+    }
 
     /**
      * This method handles a user click.
-     * If the cell is already visible or flagged, no action is performed.
+     * If the cell is already visible or flagged, an invalid action exception will be thrown.
      * If the cell was hidden and contains a bomb, the game is set as over.
      * If the user clicked on a safe cell, the cell status will be set as visible,
      * and the surrounding cells will be revealed if required.
      */
     public void click(int row, int column) {
         Cell cell = board.get(row).get(column);
-        if (Status.HIDDEN.equals(cell.getStatus())) {
-            if (cell.isBomb()) {
-                this.setOver(true);
-                return;
-            }
-            setVisibleAndIterateThroughAdjacentSafeCells(row, column);
+        if (Status.FLAGGED.equals(cell.getStatus())
+                || Status.VISIBLE.equals(cell.getStatus())) {
+            throw new InvalidActionException();
+        }
+        if (cell.isBomb()) {
+            this.setOver(true);
+            return;
+        }
+        setVisibleAndIterateThroughAdjacentSafeCells(row, column);
+    }
+
+    /**
+     * This method handles a user flag action.
+     * If the cell is already flagged, the flag status will be removed and set as hidden.
+     * If the cell was hidden and the number of set flags is less than the number of bombs,
+     * the cell status will be set as flagged.
+     * Otherwise, an invalid action exception will be thrown.
+     */
+    public void flag(int row, int column) {
+        Cell cell = board.get(row).get(column);
+        if (Status.FLAGGED.equals(cell.getStatus())) {
+            cell.setStatus(Status.HIDDEN);
+        } else if (flags < bombs) {
+            cell.setStatus(Status.FLAGGED);
+        } else {
+            throw new InvalidActionException();
         }
     }
 
@@ -39,9 +71,9 @@ public class Game {
      * the process is repeated recursively on its surrounding cells.
      */
     private void setVisibleAndIterateThroughAdjacentSafeCells(int row, int column) {
-        if(isWithinBoardLimits(row, column)){
+        if (isWithinBoardLimits(row, column)) {
             Cell cell = board.get(row).get(column);
-            if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()){
+            if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()) {
                 cell.setStatus(Status.VISIBLE);
                 if (cell.getAdjacentBombs() == 0) {
                     for (int i = row - 1; i <= row + 1; i++) {
@@ -59,6 +91,27 @@ public class Game {
                 && column >= 0 && column < board.get(0).size();
     }
 
+    public boolean isWon() {
+        return numberOfHiddenCellsEqualsNumberOfBombs()
+                || allBombsAreFlagged();
+    }
+
+    private boolean numberOfHiddenCellsEqualsNumberOfBombs() {
+        return board.stream()
+                .flatMap(Collection::stream)
+                .map(Cell::getStatus)
+                .filter(Status.HIDDEN::equals)
+                .collect(Collectors.toList())
+                .size() == bombs;
+    }
+
+    private boolean allBombsAreFlagged() {
+        return board.stream()
+                .flatMap(Collection::stream)
+                .filter(Cell::isBomb)
+                .map(Cell::getStatus)
+                .allMatch(Status.FLAGGED::equals);
+    }
 
     public boolean isOver() {
         return over;
@@ -76,10 +129,6 @@ public class Game {
         this.gameId = gameId;
     }
 
-    private Game(List<List<Cell>> board) {
-        this.board = board;
-    }
-
     public List<List<Cell>> getBoard() {
         return board;
     }
@@ -88,9 +137,30 @@ public class Game {
         this.board = board;
     }
 
+    public int getBombs() {
+        return bombs;
+    }
+
+    public void setBombs(int bombs) {
+        this.bombs = bombs;
+    }
+
+    public void setWon(boolean won) {
+        this.won = won;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
+
     public static class GameBuilder {
 
         private List<List<Cell>> board;
+        private int bombs;
 
         public GameBuilder setBoardSize(int rows, int columns) {
             board = new ArrayList<>();
@@ -104,15 +174,16 @@ public class Game {
             return this;
         }
 
-        public GameBuilder setNumberOfBombs(int bombs) {
-            while (bombs > 0) {
+        public GameBuilder setNumberOfBombs(int bombsToSet) {
+            bombs = bombsToSet;
+            while (bombsToSet > 0) {
                 int row = getRandomIntBetweenZeroAnd(board.size() - 1);
                 int column = getRandomIntBetweenZeroAnd(board.get(0).size() - 1);
                 Cell cell = board.get(row).get(column);
                 if (!cell.isBomb()) {
                     cell.setBomb(true);
                     increaseBombCountInAdjacentCells(row, column);
-                    bombs--;
+                    bombsToSet--;
                 }
             }
             return this;
@@ -143,7 +214,8 @@ public class Game {
         }
 
         public Game build() {
-            return new Game(board);
+            return new Game(board, bombs);
         }
     }
+
 }

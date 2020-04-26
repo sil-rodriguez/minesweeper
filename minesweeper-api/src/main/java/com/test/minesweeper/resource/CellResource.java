@@ -16,12 +16,12 @@ public class CellResource {
     private CellService cellService;
 
     @GetMapping("/cells")
-    private Game intializeGame() {
+    private Game intializeGame(){
         return cellService.initializeGame();
     }
 
     @PostMapping("/cells")
-    private Game intializeGame(@RequestBody ClickRequest request) {
+    private Game clickCell(@RequestBody ClickRequest request) {
         return cellService.clickCell(request);
     }
 }

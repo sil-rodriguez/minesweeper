@@ -6,8 +6,8 @@ package com.test.minesweeper.dto;
 public class ClickRequest {
 
     private String gameId;
-    private int row;
-    private int column;
+    private CellDto cellDto;
+    private Action action;
 
     public String getGameId() {
         return gameId;
@@ -17,19 +17,19 @@ public class ClickRequest {
         this.gameId = gameId;
     }
 
-    public int getRow() {
-        return row;
+    public CellDto getCellDto() {
+        return cellDto;
     }
 
-    public void setRow(int row) {
-        this.row = row;
+    public void setCellDto(CellDto cellDto) {
+        this.cellDto = cellDto;
     }
 
-    public int getColumn() {
-        return column;
+    public Action getAction() {
+        return action;
     }
 
-    public void setColumn(int column) {
-        this.column = column;
+    public void setAction(Action action) {
+        this.action = action;
     }
 }

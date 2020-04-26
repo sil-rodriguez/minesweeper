@@ -1,11 +1,26 @@
 package com.test.minesweeper.dto;
 
-import com.test.minesweeper.model.Status;
-
+/**
+ * Dto class to represent a board cell
+ */
 public class CellDto {
 
-    private Status status;
-    private int count;
+    private int column;
+    private int row;
 
+    public int getColumn() {
+        return column;
+    }
 
+    public void setColumn(int column) {
+        this.column = column;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
 }

@@ -28,7 +28,7 @@ public class CellService {
 
     public Game clickCell(ClickRequest request) {
         Game game = gameRepository.fingById(request.getGameId());
-        game.click(request.getRow(), request.getColumn());
+        game.click(request.getCellDto().getRow(), request.getCellDto().getColumn());
         return game;
     }
 

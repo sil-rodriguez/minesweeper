@@ -1,5 +1,6 @@
 package com.test.minesweeper.repository;
 
+import com.test.minesweeper.exception.GameNotFoundException;
 import com.test.minesweeper.model.Game;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +26,11 @@ public class GameRepository {
         return game;
     }
 
-    public Game fingById(String id){
-        return gameMap.get(id);
+    public Game findById(String id){
+        Game game = gameMap.get(id);
+        if(game == null){
+            throw new GameNotFoundException("No game found for game id: " + id);
+        }
+        return game;
     }
 }

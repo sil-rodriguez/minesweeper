@@ -1,10 +1,11 @@
 package com.test.minesweeper.model;
 
-import com.test.minesweeper.exception.InvalidActionException;
+import com.test.minesweeper.exception.InvalidRequestException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -33,16 +34,21 @@ public class Game {
      * and the surrounding cells will be revealed if required.
      */
     public void click(int row, int column) {
-        Cell cell = board.get(row).get(column);
-        if (Status.FLAGGED.equals(cell.getStatus())
-                || Status.VISIBLE.equals(cell.getStatus())) {
-            throw new InvalidActionException();
+        Optional<Cell> cellOptional = getCellAt(row, column);
+        if(cellOptional.isPresent()){
+            Cell cell = cellOptional.get();
+            if (Status.FLAGGED.equals(cell.getStatus())
+                    || Status.VISIBLE.equals(cell.getStatus())) {
+                throw new InvalidRequestException("Click action can only be performed on hidden cells");
+            }
+            if (cell.isBomb()) {
+                this.setOver(true);
+                return;
+            }
+            setVisibleAndIterateThroughAdjacentSafeCells(row, column);
+        }else{
+            throw new InvalidRequestException("Click action can only be performed within the game board limits");
         }
-        if (cell.isBomb()) {
-            this.setOver(true);
-            return;
-        }
-        setVisibleAndIterateThroughAdjacentSafeCells(row, column);
     }
 
     /**
@@ -59,7 +65,7 @@ public class Game {
         } else if (flags < bombs) {
             cell.setStatus(Status.FLAGGED);
         } else {
-            throw new InvalidActionException();
+            throw new InvalidRequestException("No more flags to be assigned");
         }
     }
 
@@ -71,8 +77,9 @@ public class Game {
      * the process is repeated recursively on its surrounding cells.
      */
     private void setVisibleAndIterateThroughAdjacentSafeCells(int row, int column) {
-        if (isWithinBoardLimits(row, column)) {
-            Cell cell = board.get(row).get(column);
+        Optional<Cell> cellOptional = getCellAt(row, column);
+        if (cellOptional.isPresent()){
+            Cell cell = cellOptional.get();
             if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()) {
                 cell.setStatus(Status.VISIBLE);
                 if (cell.getAdjacentBombs() == 0) {
@@ -84,6 +91,13 @@ public class Game {
                 }
             }
         }
+    }
+
+    public Optional<Cell> getCellAt(int row, int column){
+        if(isWithinBoardLimits(row,column)){
+            return Optional.of(board.get(row).get(column));
+        }
+        return Optional.empty();
     }
 
     private boolean isWithinBoardLimits(int row, int column) {

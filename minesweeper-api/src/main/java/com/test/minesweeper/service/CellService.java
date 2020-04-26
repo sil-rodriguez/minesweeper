@@ -1,6 +1,7 @@
 package com.test.minesweeper.service;
 
 import com.test.minesweeper.dto.ClickRequest;
+import com.test.minesweeper.exception.InvalidRequestException;
 import com.test.minesweeper.model.Game;
 import com.test.minesweeper.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,21 @@ public class CellService {
     }
 
     public Game clickCell(ClickRequest request) {
-        Game game = gameRepository.fingById(request.getGameId());
-        game.click(request.getCellDto().getRow(), request.getCellDto().getColumn());
+        Game game = gameRepository.findById(request.getGameId());
+        if(game.isOver()){
+            throw new InvalidRequestException("Game is over. No further actions are allowed");
+        }
+        if(game.isWon()){
+            throw new InvalidRequestException("Game is already won. No further actions are allowed");
+        }
+        switch (request.getAction()){
+            case FLAG:
+                game.flag(request.getCell().getRow(), request.getCell().getColumn());
+                break;
+            case CLICK:
+                game.click(request.getCell().getRow(), request.getCell().getColumn());
+        }
+        gameRepository.save(game);
         return game;
     }
 

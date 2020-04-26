@@ -6,7 +6,7 @@ package com.test.minesweeper.dto;
 public class ClickRequest {
 
     private String gameId;
-    private CellDto cellDto;
+    private CellDto cell;
     private Action action;
 
     public String getGameId() {
@@ -17,12 +17,12 @@ public class ClickRequest {
         this.gameId = gameId;
     }
 
-    public CellDto getCellDto() {
-        return cellDto;
+    public CellDto getCell() {
+        return cell;
     }
 
-    public void setCellDto(CellDto cellDto) {
-        this.cellDto = cellDto;
+    public void setCell(CellDto cell) {
+        this.cell = cell;
     }
 
     public Action getAction() {

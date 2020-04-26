@@ -6,10 +6,8 @@ import com.test.minesweeper.model.Game;
 import com.test.minesweeper.service.CellService;
 import com.test.minesweeper.validation.ClickRequestValidation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -21,11 +19,13 @@ public class CellResource {
     private ClickRequestValidation requestValidation = new ClickRequestValidation();
 
     @GetMapping("/cells")
+    @CrossOrigin
     private Game intializeGame(){
         return cellService.initializeGame();
     }
 
     @PostMapping("/cells")
+    @CrossOrigin
     private Game clickCell(@RequestBody ClickRequest request) {
         List<String> errors = requestValidation.isValid(request);
         if(errors.isEmpty()){

@@ -25,29 +25,28 @@ public class Game {
         if (Status.HIDDEN.equals(cell.getStatus())) {
             if (cell.isBomb()) {
                 this.setOver(true);
-            } else {
-                cell.setStatus(Status.VISIBLE);
-                revealAdjacentSafeCells(row, column);
+                return;
             }
+            setVisibleAndIterateThroughAdjacentSafeCells(row, column);
         }
     }
 
     /**
-     * This method iterates through the surrounding cells of a clicked cell.
+     * This method sets a cell as visible and iterates through its surrounding cells.
      * If the coordinates are within the board limits,
      * and the cell is hidden and is not a bomb, then it is set a visible.
      * If in addition to that, the numberOfAdjacentBombs equals zero,
      * the process is repeated recursively on its surrounding cells.
      */
-    private void revealAdjacentSafeCells(int row, int column) {
-        for (int i = row - 1; i <= row + 1; i++) {
-            for (int j = column - 1; j <= column + 1; j++) {
-                if (isWithinBoardLimits(i, j)) {
-                    Cell cell = board.get(i).get(j);
-                    if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()) {
-                        cell.setStatus(Status.VISIBLE);
-                        if (cell.getAdjacentBombs() == 0) {
-                            revealAdjacentSafeCells(i, j);
+    private void setVisibleAndIterateThroughAdjacentSafeCells(int row, int column) {
+        if(isWithinBoardLimits(row, column)){
+            Cell cell = board.get(row).get(column);
+            if (Status.HIDDEN.equals(cell.getStatus()) && !cell.isBomb()){
+                cell.setStatus(Status.VISIBLE);
+                if (cell.getAdjacentBombs() == 0) {
+                    for (int i = row - 1; i <= row + 1; i++) {
+                        for (int j = column - 1; j <= column + 1; j++) {
+                            setVisibleAndIterateThroughAdjacentSafeCells(i, j);
                         }
                     }
                 }

@@ -114,7 +114,7 @@ public class Game {
         return board.stream()
                 .flatMap(Collection::stream)
                 .map(Cell::getStatus)
-                .filter(Status.HIDDEN::equals)
+                .filter(status -> Status.HIDDEN.equals(status) || Status.FLAGGED.equals(status))
                 .collect(Collectors.toList())
                 .size() == bombs;
     }

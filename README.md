@@ -1,3 +1,37 @@
+# Minesweeper API
+
+Minesweeper is a test app to evaluate coding skills.
+
+## Important Note
+
+In order to prioritize backend work, the ui was created using a react minesweeper [tutorial](https://medium.com/@learncodefromjohn/how-to-make-minesweeper-with-react-fb4f9b5358da) as template. The code from this tutorial was cloned and then modified to consume the minesweeper api.
+
+## Installation
+
+The backend api can be run using the jar file at \minesweeper-api\build\libs\minesweeper-0.0.1-SNAPSHOT.jar
+
+```bash
+java -jar <filepath>
+```
+
+The ui can be installed from the minesweeper-ui folder using nodeJs.
+
+```bash
+npm install
+```
+
+Once installed, it can be run using the start comand. This will open the app in a browser tab at localhost:3000.
+
+```bash
+npm start
+```
+
+## Usage
+
+API documentation can be found at the GET endpoint /v2/api-docs.
+
+## Original Task instructions
+
 # minesweeper-API
 API test
 

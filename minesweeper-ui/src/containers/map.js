@@ -2,16 +2,16 @@
 
 import React, { Component } from "react";
 import Cell from "./cell";
-import {populateMap} from "../helpers";
+import {populateMap, clickCell} from "../helpers";
 
 type Props = {};
 type State = {
   mapSize: number,
   bombCount: number,
-  theMap: Array<Array<number | string>>,
-  cellsClicked: number,
+  theMap: Array<Array<object>>,
   isLoaded: boolean,
-  error: string
+  error: string,
+  gameId: string
 };
 
 class Map extends Component<Props, State> {
@@ -21,11 +21,10 @@ class Map extends Component<Props, State> {
     let bombCount = 10;
     this.state = {
       mapSize,
-      bombCount,
-      cellsClicked: 1
+      bombCount
     };
   }
-"☀"
+
   componentDidMount() {
       fetch("http://localhost:8080/cells")
         .then(res => res.json())
@@ -33,7 +32,8 @@ class Map extends Component<Props, State> {
           (result) => {
             this.setState({
               isLoaded: true,
-              theMap: populateMap(result)
+              theMap: populateMap(result.board),
+              gameId: result.gameId
             });
           },
           (error) => {
@@ -44,15 +44,6 @@ class Map extends Component<Props, State> {
           }
         )
       }
-
-  incCellsClicked() {
-    let { mapSize, bombCount, cellsClicked } = this.state;
-    let safeCells = mapSize * mapSize - bombCount;
-    this.setState({
-      cellsClicked: cellsClicked + 1
-    });
-    if (cellsClicked >= safeCells) alert("☀☀☀ You have won! ☀☀☀");
-  }
 
   render() {
     const { error, isLoaded} = this.state;
@@ -74,8 +65,10 @@ class Map extends Component<Props, State> {
                           key={col}
                           row={row}
                           column={col}
-                          value={subitem}
-                          incCellsClicked={this.incCellsClicked.bind(this)}
+                          value={subitem.value}
+                          status={subitem.status}
+                          onClickFunction={() => clickCell(this, this.state.gameId, row, col, "CLICK")}
+                          onContextMenuFunction={() => clickCell(this, this.state.gameId, row, col, "FLAG")}
                         />
                       );
                     })}

@@ -62,7 +62,7 @@ p {
   margin-left: 31%;
 }
 
-.bomb.clicked {
+.bombclicked {
   color: rgb(216, 0, 0) !important;
   font-size: 30px;
   padding: 0px;
